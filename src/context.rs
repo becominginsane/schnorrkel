@@ -390,6 +390,24 @@ where T: SigningTranscript, R: RngCore+CryptoRng
     }
 }
 
+/// Attach a `CryptoRng` to a `SigningTranscript` to replace the default `ThreadRng`.
+///
+/// There are tricks like `attach_rng(t,ChaChaRng::from_seed([0u8; 32]))`
+/// for deterministic tests.  We warn against doing this in production
+/// however because, although such derandomization produces secure Schnorr
+/// signatures, we do implement protocols here like multi-signatures which
+/// likely become vulnerable when derandomized.
+///
+/// This is the same function as `attach_rng` but allowing to pass a `RefCell` directly
+pub fn attach_rng_cell<T,R>(t: T, rng: RefCell<R>) -> SigningTranscriptWithRng<T,R>
+where T: SigningTranscript, R: RngCore+CryptoRng
+{
+    SigningTranscriptWithRng {
+        t, rng
+    }
+}
+
+
 #[cfg(feature = "rand_chacha")]
 use rand_chacha::ChaChaRng;
 
